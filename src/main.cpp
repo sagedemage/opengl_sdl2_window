@@ -137,7 +137,7 @@ bool initGL(GLAttributes *glAttributes) {
 	std::string vertexShaderSourceS;
 
 	if (!getShaderCode(vertex_shader_file_path, &vertexShaderSourceS)) {
-		std::cout << "Unable to get shader source code!" << std::endl;
+		std::cout << "Unable to get vertex shader source code!" << std::endl;
 		return false;
 	}
 
@@ -167,7 +167,7 @@ bool initGL(GLAttributes *glAttributes) {
 	std::string fragmentShaderSourceS;
 	
 	if (!getShaderCode(fragment_shader_file_path, &fragmentShaderSourceS)) {
-		std::cout << "Unable to get shader source code!" << std::endl;
+		std::cout << "Unable to get fragment shader source code!" << std::endl;
 		return false;
 	}
 
