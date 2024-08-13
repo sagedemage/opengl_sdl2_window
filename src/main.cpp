@@ -1,5 +1,7 @@
 #include <iostream>
 #include <stdexcept>
+#include <fstream>
+#include <array>
 
 #define LEVEL_WIDTH 744  // 750
 #define LEVEL_HEIGHT 504 // 500
@@ -18,6 +20,7 @@ void debugProgramLog(GLuint program);
 void debugShaderLog(GLuint shader);
 bool initGL(GLAttributes *glAttributes);
 void render(GLAttributes *glAttributes);
+bool getShaderCode(const char* shader_file_path, std::string* shader_source);
 
 int main() {
 	SDL_Window *gWindow = NULL;
@@ -122,18 +125,26 @@ bool initGL(GLAttributes *glAttributes) {
 	GLuint gVBO = 0;
 	GLuint gVAO = 0;
 
+	const char *vertex_shader_file_path = "shader/shader.vert";
+	const char *fragment_shader_file_path = "shader/shader.frag";
+
 	std::string debug_msg = "";
 
 	// Create vertex shader
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
 	// Get vertex source
-	const GLchar* vertexShaderSource[] = {
-		"#version 140\nin vec3 aPos; void main() { gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0); }"
-	};
+	std::string vertexShaderSourceS;
+
+	if (!getShaderCode(vertex_shader_file_path, &vertexShaderSourceS)) {
+		std::cout << "Unable to get vertex shader source code!" << std::endl;
+		return false;
+	}
+
+	GLchar* vertexShaderSource = const_cast<GLchar*>(vertexShaderSourceS.c_str());
 
 	// Set vertex source
-	glShaderSource(vertexShader, 1, vertexShaderSource, NULL);
+	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
 
 	// Compile vertex source
 	glCompileShader(vertexShader);
@@ -153,12 +164,17 @@ bool initGL(GLAttributes *glAttributes) {
 	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
 	// Get fragment source
-	const GLchar* fragmentShaderSource[] = {
-		"#version 140\nout vec4 LFragment; void main() { LFragment = vec4(1.0, 1.0, 1.0, 1.0); }"
-	};
+	std::string fragmentShaderSourceS;
+	
+	if (!getShaderCode(fragment_shader_file_path, &fragmentShaderSourceS)) {
+		std::cout << "Unable to get fragment shader source code!" << std::endl;
+		return false;
+	}
+
+	GLchar* fragmentShaderSource = const_cast<GLchar*>(fragmentShaderSourceS.c_str());
 
 	// Set fragment source
-	glShaderSource(fragmentShader, 1, fragmentShaderSource, NULL);
+	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
 
 	// Compile fragment source
 	glCompileShader(fragmentShader);
@@ -308,3 +324,26 @@ void render(GLAttributes *glAttributes) {
 	glBindVertexArray(glAttributes->gVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 }
+
+bool getShaderCode(const char* shader_file_path, std::string* shader_source) {
+	/* Get shader source code from a file as a string */
+	std::ifstream read_shader_file(shader_file_path);
+	if (!read_shader_file.is_open()) {
+		std::cout << "failed to open shader file: " + static_cast<std::string>(shader_file_path) << std::endl;
+		return false;
+	}
+
+	std::string s_code;
+	std::string line;
+
+	while (getline(read_shader_file, line)) {
+		// add line to the shader code
+		s_code += line + "\n";
+	}
+
+	read_shader_file.close();
+	*shader_source = s_code.c_str();
+
+	return true;
+}
+
