@@ -163,6 +163,7 @@ bool initGL(GLAttributes *glAttributes) {
 	// Create fragment shader
 	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
+	// Get fragment source
 	std::string fragmentShaderSourceS;
 	
 	if (!getShaderCode(fragment_shader_file_path, &fragmentShaderSourceS)) {
