@@ -28,6 +28,9 @@ Checks:   '
           -readability-container-data-pointer,
           -cppcoreguidelines-pro-type-reinterpret-cast,
           -cppcoreguidelines-pro-type-const-cast,
+          -cppcoreguidelines-pro-type-cstyle-cast,
+          -google-readability-casting,
+          -performance-no-int-to-ptr,
           '
 # Trojan Source
 # The misc-misleading-identifier, misc-homoglyph, and misc-misleading-bidirectional are
