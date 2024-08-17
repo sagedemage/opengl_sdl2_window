@@ -1,349 +1,353 @@
-#include <iostream>
-#include <stdexcept>
-#include <fstream>
 #include <array>
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
 
-#define LEVEL_WIDTH 744  // 750
-#define LEVEL_HEIGHT 504 // 500
-
-const int WIDTH = 750;
-const int HEIGHT = 500;
+constexpr int WINDOW_WIDTH = 750;
+constexpr int WINDOW_HEIGHT = 500;
 
 typedef struct GLAttributes {
-	GLuint gProgramID;
-	GLint gVertexPos2DLocation;
-	GLuint gVBO; 
-	GLuint gVAO;
+    GLuint g_program_id;
+    GLuint g_vbo;
+    GLuint g_vao;
 } GLAttributes;
 
-void debugProgramLog(GLuint program);
-void debugShaderLog(GLuint shader);
-bool initGL(GLAttributes *glAttributes);
-void render(GLAttributes *glAttributes);
-bool getShaderCode(const char* shader_file_path, std::string* shader_source);
+void DebugProgramLog(GLuint program);
+void DebugShaderLog(GLuint shader);
+bool InitGL(GLAttributes* gl_attributes);
+void Render(GLAttributes* gl_attributes);
+bool GetShaderCode(const char* shader_file_path, std::string* shader_source);
 
 int main() {
-	SDL_Window *gWindow = NULL;
-	SDL_GLContext gContext = NULL;
-	
-	GLAttributes glAttributes;
+    SDL_Window* g_window = NULL;
+    SDL_GLContext g_context = NULL;
 
-	std::string debug_msg = "";
+    GLAttributes gl_attributes;
 
-	// Initilize SDL
-	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-		debug_msg = "Failed to initiliaze SDL: " + static_cast<std::string>(SDL_GetError());
-		std::runtime_error(debug_msg.c_str());
-	}
-	
-	// Use OpenGL 3.1 core
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    std::string debug_msg;
 
-	// Create window
-	gWindow = SDL_CreateWindow("OpenGL SDL2 Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_OPENGL);
-	if (gWindow == NULL) {
-		debug_msg = "OpenGL context could not be created! SDL_Error: " + static_cast<std::string>(SDL_GetError());
-		std::cout << debug_msg << std::endl;
-		std::runtime_error(debug_msg.c_str());
-	}
-	
-	// Create context
-	gContext = SDL_GL_CreateContext(gWindow);
-	if (gContext == NULL) {
-		debug_msg = "OpenGL context could not be created! SDL_Error: " + static_cast<std::string>(SDL_GetError());
-		std::cout << debug_msg << std::endl;
-		std::runtime_error(debug_msg.c_str());
-	}
+    // Initilize SDL
+    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+        debug_msg = "Failed to initiliaze SDL: " +
+                    static_cast<std::string>(SDL_GetError());
+        std::cerr << debug_msg << std::endl;
+        return -1;
+    }
 
-	// Initialize GLEW
-	glewExperimental = GL_TRUE;
-	GLenum glewError = glewInit();
+    // Use OpenGL 3.1 core
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
+                        SDL_GL_CONTEXT_PROFILE_CORE);
 
-	if (glewError != GLEW_OK) {
-		const char* glew_error_msg_char_p = reinterpret_cast<const char*>(glewGetErrorString(glewError));
-		std::string glew_error_msg = static_cast<std::string>(glew_error_msg_char_p);
+    // Create window
+    g_window = SDL_CreateWindow("OpenGL SDL2 Window", SDL_WINDOWPOS_CENTERED,
+                                SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH,
+                                WINDOW_HEIGHT, SDL_WINDOW_OPENGL);
+    if (g_window == NULL) {
+        debug_msg = "OpenGL context could not be created! SDL_Error: " +
+                    static_cast<std::string>(SDL_GetError());
+        std::cerr << debug_msg << std::endl;
+        return -1;
+    }
 
-		debug_msg = "Error initializing GLEW! " + glew_error_msg;
-		std::cout << debug_msg << std::endl;
-		std::runtime_error(debug_msg.c_str());
-	}
+    // Create context
+    g_context = SDL_GL_CreateContext(g_window);
+    if (g_context == NULL) {
+        debug_msg = "OpenGL context could not be created! SDL_Error: " +
+                    static_cast<std::string>(SDL_GetError());
+        std::cerr << debug_msg << std::endl;
+        return -1;
+    }
 
-	// Use Vsync
-	if (SDL_GL_SetSwapInterval(1) < 0) {
-		debug_msg = "Warning: Unable to set VSync! SDL Error: " + static_cast<std::string>(SDL_GetError());
-		std::cout << debug_msg << std::endl;
-		std::runtime_error(debug_msg.c_str());
-	}
+    // Initialize GLEW
+    glewExperimental = GL_TRUE;
+    GLenum glew_error = glewInit();
 
+    if (glew_error != GLEW_OK) {
+        const char* glew_error_msg_char_p =
+            reinterpret_cast<const char*>(glewGetErrorString(glew_error));
+        std::string glew_error_msg =
+            static_cast<std::string>(glew_error_msg_char_p);
 
-	// Initialize OpenGL
-	if (!initGL(&glAttributes)) {
-		debug_msg = "Unable to initialize OpenGL!";
-		std::cout << debug_msg << std::endl;
-		std::runtime_error(debug_msg.c_str());
-	}
+        debug_msg = "Error initializing GLEW! " + glew_error_msg;
+        std::cerr << debug_msg << std::endl;
+        return -1;
+    }
 
+    // Use Vsync
+    if (SDL_GL_SetSwapInterval(1) < 0) {
+        debug_msg = "Warning: Unable to set VSync! SDL Error: " +
+                    static_cast<std::string>(SDL_GetError());
+        std::cerr << debug_msg << std::endl;
+        return -1;
+    }
 
-	bool quit = false;
+    // Initialize OpenGL
+    if (!InitGL(&gl_attributes)) {
+        debug_msg = "Unable to initialize OpenGL!";
+        std::cerr << debug_msg << std::endl;
+        return -1;
+    }
 
-	while(!quit) {
-		SDL_Event event;
-		while(SDL_PollEvent(&event)) {
-			switch (event.type) {
-				case SDL_QUIT:
-					quit = true;
-					break;
-				case SDL_KEYDOWN:
-					if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
-						quit = true;
-					}
-					break;
-			}
-		}
+    bool quit = false;
 
-		// Render the scene
-		render(&glAttributes);
-		
-		// Swap the back-buffer and present it
-		SDL_GL_SwapWindow(gWindow);
-	}
+    while (!quit) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
+                case SDL_QUIT:
+                    quit = true;
+                    break;
+                case SDL_KEYDOWN:
+                    if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+                        quit = true;
+                    }
+                    break;
+            }
+        }
 
-	// Free Resources
-	SDL_GL_DeleteContext(gContext);
-	SDL_DestroyWindow(gWindow);
-	SDL_Quit();
+        // Render the scene
+        Render(&gl_attributes);
+
+        // Swap the back-buffer and present it
+        SDL_GL_SwapWindow(g_window);
+    }
+
+    // Free Resources
+    SDL_GL_DeleteContext(g_context);
+    SDL_DestroyWindow(g_window);
+    SDL_Quit();
 
     return 0;
 }
 
-bool initGL(GLAttributes *glAttributes) {
-	// Graphics program
-	GLuint gProgramID = 0;
-	GLint gVertexPos2DLocation = -1;
-	GLuint gVBO = 0;
-	GLuint gVAO = 0;
+bool InitGL(GLAttributes* gl_attributes) {
+    // Graphics program
+    GLuint g_program_id = 0;
+    GLuint g_vbo = 0;
+    GLuint g_vao = 0;
 
-	const char *vertex_shader_file_path = "shader/shader.vert";
-	const char *fragment_shader_file_path = "shader/shader.frag";
+    const char* vertex_shader_file_path = "shader/shader.vert";
+    const char* fragment_shader_file_path = "shader/shader.frag";
 
-	std::string debug_msg = "";
+    std::string debug_msg;
 
-	// Create vertex shader
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    // Create vertex shader
+    GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
 
-	// Get vertex source
-	std::string vertexShaderSourceS;
+    // Get vertex source
+    std::string vertex_shader_source_s;
 
-	if (!getShaderCode(vertex_shader_file_path, &vertexShaderSourceS)) {
-		std::cout << "Unable to get vertex shader source code!" << std::endl;
-		return false;
-	}
+    if (!GetShaderCode(vertex_shader_file_path, &vertex_shader_source_s)) {
+        std::cout << "Unable to get vertex shader source code!" << std::endl;
+        return false;
+    }
 
-	GLchar* vertexShaderSource = const_cast<GLchar*>(vertexShaderSourceS.c_str());
+    GLchar* vertex_shader_source =
+        const_cast<GLchar*>(vertex_shader_source_s.c_str());
 
-	// Set vertex source
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    // Set vertex source
+    glShaderSource(vertex_shader, 1, &vertex_shader_source, NULL);
 
-	// Compile vertex source
-	glCompileShader(vertexShader);
+    // Compile vertex source
+    glCompileShader(vertex_shader);
 
-	// Check vertex shader for errors
-	GLint vShaderCompiled = GL_FALSE;
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &vShaderCompiled);
+    // Check vertex shader for errors
+    GLint v_shader_compiled = GL_FALSE;
+    glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &v_shader_compiled);
 
-	if (vShaderCompiled != GL_TRUE) {
-		debug_msg = "Unable to compile vertex shader " + std::to_string(vertexShader) + "!";
-		std::cout << debug_msg << std::endl;
-		debugShaderLog(vertexShader);
-		return false;
-	}
+    if (v_shader_compiled != GL_TRUE) {
+        debug_msg = "Unable to compile vertex shader " +
+                    std::to_string(vertex_shader) + "!";
+        std::cout << debug_msg << std::endl;
+        DebugShaderLog(vertex_shader);
+        return false;
+    }
 
-	// Create fragment shader
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    // Create fragment shader
+    GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
 
-	// Get fragment source
-	std::string fragmentShaderSourceS;
-	
-	if (!getShaderCode(fragment_shader_file_path, &fragmentShaderSourceS)) {
-		std::cout << "Unable to get fragment shader source code!" << std::endl;
-		return false;
-	}
+    // Get fragment source
+    std::string fragment_shader_source_s;
 
-	GLchar* fragmentShaderSource = const_cast<GLchar*>(fragmentShaderSourceS.c_str());
+    if (!GetShaderCode(fragment_shader_file_path, &fragment_shader_source_s)) {
+        std::cout << "Unable to get fragment shader source code!" << std::endl;
+        return false;
+    }
 
-	// Set fragment source
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    GLchar* fragment_shader_source =
+        const_cast<GLchar*>(fragment_shader_source_s.c_str());
 
-	// Compile fragment source
-	glCompileShader(fragmentShader);
+    // Set fragment source
+    glShaderSource(fragment_shader, 1, &fragment_shader_source, NULL);
 
-	// Check fragment shader for errors
-	GLint fShaderCompiled = GL_FALSE;
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &fShaderCompiled);
-	if (fShaderCompiled != GL_TRUE) {
-		debug_msg = "Unable to compile fragment shader " + std::to_string(fragmentShader) + "!";
-		std::cout << debug_msg << std::endl;
-		debugShaderLog(fragmentShader);
-		return false;
-	}
+    // Compile fragment source
+    glCompileShader(fragment_shader);
 
-	/* Link program */
-	// Generate program
-	gProgramID = glCreateProgram();
+    // Check fragment shader for errors
+    GLint f_shader_compiled = GL_FALSE;
+    glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &f_shader_compiled);
+    if (f_shader_compiled != GL_TRUE) {
+        debug_msg = "Unable to compile fragment shader " +
+                    std::to_string(fragment_shader) + "!";
+        std::cout << debug_msg << std::endl;
+        DebugShaderLog(fragment_shader);
+        return false;
+    }
 
-	// Attach vertex shader to program
-	glAttachShader(gProgramID, vertexShader);
-	
-	// Attach fragment shader to program
-	glAttachShader(gProgramID, fragmentShader);
-	
-	glLinkProgram(gProgramID);
+    /* Link program */
+    // Generate program
+    g_program_id = glCreateProgram();
 
-	// Check for errors
-	GLint programSuccess = GL_TRUE;
-	glGetProgramiv(gProgramID, GL_LINK_STATUS, &programSuccess);
-	if (programSuccess != GL_TRUE) {
-		debug_msg = "Error linking program " + std::to_string(gProgramID) + "!";
-		std::cout << debug_msg << std::endl;
-		debugProgramLog(gProgramID);
-		return false;
-	}
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
+    // Attach vertex shader to program
+    glAttachShader(g_program_id, vertex_shader);
 
-	// Initialize clear color
-	glClearColor(0.f, 0.f, 0.f, 1.f);
+    // Attach fragment shader to program
+    glAttachShader(g_program_id, fragment_shader);
 
-	// VBO data
-	GLfloat vertexData[] = {
-		// positions		// colors
-		-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left vertex
-		0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom right vertex
-		0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f // top vertex
-	};
+    glLinkProgram(g_program_id);
 
-	// Here
-	glGenVertexArrays(1, &gVAO);
-	glGenBuffers(1, &gVBO);
-	glBindVertexArray(gVAO);
+    // Check for errors
+    GLint program_success = GL_TRUE;
+    glGetProgramiv(g_program_id, GL_LINK_STATUS, &program_success);
+    if (program_success != GL_TRUE) {
+        debug_msg =
+            "Error linking program " + std::to_string(g_program_id) + "!";
+        std::cout << debug_msg << std::endl;
+        DebugProgramLog(g_program_id);
+        return false;
+    }
+    glDeleteShader(vertex_shader);
+    glDeleteShader(fragment_shader);
 
-	glBindBuffer(GL_ARRAY_BUFFER, gVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
+    // Initialize clear color
+    glClearColor(0.F, 0.F, 0.F, 1.F);
 
-	// position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
+    // VBO data
+    std::array<GLfloat, 18> vertex_data = {
+        // positions		// colors
+        -0.5F, -0.5F, 0.0F, 1.0F, 0.0F, 0.0F,  // bottom left vertex
+        0.5F,  -0.5F, 0.0F, 0.0F, 1.0F, 0.0F,  // bottom right vertex
+        0.0F,  0.5F,  0.0F, 0.0F, 0.0F, 1.0F   // top vertex
+    };
 
-	// color attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3*sizeof(float)));
-	glEnableVertexAttribArray(1);
+    // Here
+    glGenVertexArrays(1, &g_vao);
+    glGenBuffers(1, &g_vbo);
+    glBindVertexArray(g_vao);
 
-	glAttributes->gVAO = gVAO;
-	glAttributes->gVBO = gVBO;
-	glAttributes->gProgramID = gProgramID;
-	glAttributes->gVertexPos2DLocation = gVertexPos2DLocation;
+    glBindBuffer(GL_ARRAY_BUFFER, g_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data), vertex_data.data(),
+                 GL_STATIC_DRAW);
 
-	glUseProgram(glAttributes->gProgramID);
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+                          static_cast<void*>(0));
+    glEnableVertexAttribArray(0);
 
-	return true;
+    // color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+                          (void*)(3 * sizeof(float)));
+
+    glEnableVertexAttribArray(1);
+
+    gl_attributes->g_vao = g_vao;
+    gl_attributes->g_vbo = g_vbo;
+    gl_attributes->g_program_id = g_program_id;
+
+    glUseProgram(gl_attributes->g_program_id);
+
+    return true;
 }
 
-void debugProgramLog(GLuint program) {
-	std::string debug_msg = "";
-	// make sure name is shader
-	if (glIsProgram(program)) {
-		// Program log length
-		int infoLogLength = 0;
-		int maxLength = infoLogLength;
+void DebugProgramLog(GLuint program) {
+    std::string debug_msg;
+    // make sure name is shader
+    if (glIsProgram(program)) {
+        // Program log length
+        int info_log_length = 0;
+        int max_length = info_log_length;
 
-		// Get info string length
-		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+        // Get info string length
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &max_length);
 
-		// Allocate string
-		char* infoLog = new char[maxLength];
+        // Allocate string
+        std::unique_ptr<char> info_log(new char[max_length]);
 
-		// Get info log
-		glGetProgramInfoLog(program, maxLength, &infoLogLength, infoLog);
-		if (infoLogLength > 0) {
-			// Print Log
-			std::cout << infoLog << std::endl;
-		}
+        // Get info log
+        glGetProgramInfoLog(program, max_length, &info_log_length,
+                            info_log.get());
+        if (info_log_length > 0) {
+            // Print Log
+            std::cout << info_log.get() << std::endl;
+        }
 
-		// Deallcate string
-		delete[] infoLog;
-	}
-	else {
-		debug_msg = "Name " + std::to_string(program) + " is not a prgram";
-		std::cout << debug_msg << std::endl;
-	}
+    } else {
+        debug_msg = "Name " + std::to_string(program) + " is not a prgram";
+        std::cout << debug_msg << std::endl;
+    }
 }
 
-void debugShaderLog(GLuint shader) {
-	std::string debug_msg = "";
-	// make sure name is shader
-	if (glIsShader(shader)) {
-		// Program log length
-		int infoLogLength = 0;
-		int maxLength = infoLogLength;
+void DebugShaderLog(GLuint shader) {
+    std::string debug_msg;
+    // make sure name is shader
+    if (glIsShader(shader)) {
+        // Program log length
+        int info_log_length = 0;
+        int max_length = info_log_length;
 
-		// Get info string length
-		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
+        // Get info string length
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &max_length);
 
-		// Allocate string
-		char* infoLog = new char[maxLength];
+        // Allocate string
+        std::unique_ptr<char> info_log(new char[max_length]);
 
-		// Get info log
-		glGetShaderInfoLog(shader, maxLength, &infoLogLength, infoLog);
-		if (infoLogLength > 0) {
-			// Print Log
-			std::cout << infoLog << std::endl;
-		}
+        // Get info log
+        glGetShaderInfoLog(shader, max_length, &info_log_length,
+                           info_log.get());
+        if (info_log_length > 0) {
+            // Print Log
+            std::cout << info_log.get() << std::endl;
+        }
 
-		// Deallcate string
-		delete[] infoLog;
-	}
-	else {
-		debug_msg = "Name " + std::to_string(shader) + " is not a shader";
-		std::cout << debug_msg << std::endl;
-	}
+    } else {
+        debug_msg = "Name " + std::to_string(shader) + " is not a shader";
+        std::cout << debug_msg << std::endl;
+    }
 }
 
-GLuint gProgramID = 0;
-	GLint gVertexPos2DLocation = -1;
-	GLuint gVBO = 0;
-	GLuint gIBO = 0;
+void Render(GLAttributes* gl_attributes) {
+    // Clear color buffer
+    glClear(GL_COLOR_BUFFER_BIT);
 
-void render(GLAttributes *glAttributes) {
-	// Clear color buffer
-	glClear(GL_COLOR_BUFFER_BIT);
-	
-	// Draw triangle
-	glUseProgram(glAttributes->gProgramID);
-	glBindVertexArray(glAttributes->gVAO);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+    // Draw triangle
+    glUseProgram(gl_attributes->g_program_id);
+    glBindVertexArray(gl_attributes->g_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
-bool getShaderCode(const char* shader_file_path, std::string* shader_source) {
-	/* Get shader source code from a file as a string */
-	std::ifstream read_shader_file(shader_file_path);
-	if (!read_shader_file.is_open()) {
-		std::cout << "failed to open shader file: " + static_cast<std::string>(shader_file_path) << std::endl;
-		return false;
-	}
+bool GetShaderCode(const char* shader_file_path, std::string* shader_source) {
+    /* Get shader source code from a file as a string */
+    std::ifstream read_shader_file(shader_file_path);
+    if (!read_shader_file.is_open()) {
+        std::cout << "failed to open shader file: " +
+                         static_cast<std::string>(shader_file_path)
+                  << std::endl;
+        return false;
+    }
 
-	std::string s_code;
-	std::string line;
+    std::string s_code;
+    std::string line;
 
-	while (getline(read_shader_file, line)) {
-		// add line to the shader code
-		s_code += line + "\n";
-	}
+    while (getline(read_shader_file, line)) {
+        // add line to the shader code
+        s_code += line + "\n";
+    }
 
-	read_shader_file.close();
-	*shader_source = s_code.c_str();
+    read_shader_file.close();
+    *shader_source = s_code;
 
-	return true;
+    return true;
 }
-
