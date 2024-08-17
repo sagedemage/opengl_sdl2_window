@@ -233,7 +233,6 @@ bool InitGL(GLAttributes* gl_attributes) {
         0.0F,  0.5F,  0.0F, 0.0F, 0.0F, 1.0F   // top vertex
     };
 
-    // Here
     glGenVertexArrays(1, &g_vao);
     glGenBuffers(1, &g_vbo);
     glBindVertexArray(g_vao);
