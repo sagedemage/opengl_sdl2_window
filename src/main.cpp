@@ -11,7 +11,6 @@ const int HEIGHT = 500;
 
 typedef struct GLAttributes {
 	GLuint gProgramID;
-	GLint gVertexPos2DLocation;
 	GLuint gVBO; 
 	GLuint gVAO;
 } GLAttributes;
@@ -121,7 +120,6 @@ int main() {
 bool initGL(GLAttributes *glAttributes) {
 	// Graphics program
 	GLuint gProgramID = 0;
-	GLint gVertexPos2DLocation = -1;
 	GLuint gVBO = 0;
 	GLuint gVAO = 0;
 
@@ -243,7 +241,6 @@ bool initGL(GLAttributes *glAttributes) {
 	glAttributes->gVAO = gVAO;
 	glAttributes->gVBO = gVBO;
 	glAttributes->gProgramID = gProgramID;
-	glAttributes->gVertexPos2DLocation = gVertexPos2DLocation;
 
 	glUseProgram(glAttributes->gProgramID);
 
@@ -311,7 +308,6 @@ void debugShaderLog(GLuint shader) {
 }
 
 GLuint gProgramID = 0;
-	GLint gVertexPos2DLocation = -1;
 	GLuint gVBO = 0;
 	GLuint gIBO = 0;
 
