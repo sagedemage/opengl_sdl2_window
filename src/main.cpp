@@ -4,8 +4,8 @@
 #include <memory>
 #include <stdexcept>
 
-constexpr int WIDTH = 750;
-constexpr int HEIGHT = 500;
+constexpr int WINDOW_WIDTH = 750;
+constexpr int WINDOW_HEIGHT = 500;
 
 typedef struct GLAttributes {
     GLuint g_program_id;
@@ -43,8 +43,8 @@ int main() {
 
     // Create window
     g_window = SDL_CreateWindow("OpenGL SDL2 Window", SDL_WINDOWPOS_CENTERED,
-                                SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT,
-                                SDL_WINDOW_OPENGL);
+                                SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH,
+                                WINDOW_HEIGHT, SDL_WINDOW_OPENGL);
     if (g_window == NULL) {
         debug_msg = "OpenGL context could not be created! SDL_Error: " +
                     static_cast<std::string>(SDL_GetError());
@@ -248,13 +248,9 @@ bool InitGL(GLAttributes* gl_attributes) {
     glEnableVertexAttribArray(0);
 
     // color attribute
-    glVertexAttribPointer(
-        1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
-        (void*)(3 *
-                sizeof(
-                    float)));  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast,
-                               // google-readability-casting,
-                               // performance-no-int-to-ptr)
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+                          (void*)(3 * sizeof(float)));
+
     glEnableVertexAttribArray(1);
 
     gl_attributes->g_vao = g_vao;
@@ -321,10 +317,6 @@ void DebugShaderLog(GLuint shader) {
         std::cout << debug_msg << std::endl;
     }
 }
-
-// GLuint gProgramID = 0;
-// GLuint gVBO = 0;
-// GLuint gIBO = 0;
 
 void Render(GLAttributes* gl_attributes) {
     // Clear color buffer
