@@ -9,4 +9,4 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 
-#endif // PCH_H
+#endif  // PCH_H
