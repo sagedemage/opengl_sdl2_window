@@ -293,7 +293,7 @@ void DebugShaderLog(GLuint shader) {
     std::string debug_msg;
     // make sure name is shader
     if (glIsShader(shader)) {
-        // Program log length
+        // Shader log length
         int info_log_length = 0;
         int max_length = info_log_length;
 
