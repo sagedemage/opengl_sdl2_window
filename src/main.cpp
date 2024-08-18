@@ -263,7 +263,7 @@ bool InitGL(GLAttributes* gl_attributes) {
 
 void DebugProgramLog(GLuint program) {
     std::string debug_msg;
-    // make sure name is shader
+    // make sure name is program
     if (glIsProgram(program)) {
         // Program log length
         int info_log_length = 0;
@@ -284,7 +284,7 @@ void DebugProgramLog(GLuint program) {
         }
 
     } else {
-        debug_msg = "Name " + std::to_string(program) + " is not a prgram";
+        debug_msg = "Name " + std::to_string(program) + " is not a program";
         std::cout << debug_msg << std::endl;
     }
 }
