@@ -102,10 +102,17 @@ int main() {
         debug_msg =
             "Mix_OpenAudio: " + static_cast<std::string>(Mix_GetError());
         std::cerr << debug_msg << std::endl;
+        return -1;
     }
 
     // Load music file
     Mix_Music* music = Mix_LoadMUS(music_path);
+
+    if (music == NULL) {
+        std::cerr << "Mix_LoadMUS Error: Unable to load the audio file!"
+                  << std::endl;
+        return -1;
+    }
 
     // Adjust music volume
     Mix_VolumeMusic(music_volume);
