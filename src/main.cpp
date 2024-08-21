@@ -99,7 +99,8 @@ int main() {
     // Intialize SDL_mixer
     if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT,
                       MIX_DEFAULT_CHANNELS, chunksize) == -1) {
-        debug_msg = "Mix_OpenAudio: " + static_cast<std::string>(Mix_GetError());
+        debug_msg =
+            "Mix_OpenAudio: " + static_cast<std::string>(Mix_GetError());
         std::cerr << debug_msg << std::endl;
     }
 
