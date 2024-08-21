@@ -25,6 +25,11 @@ int main() {
 
     GLAttributes gl_attributes;
 
+    /* Mixer */
+    const int music_volume = 12;
+    const int chunksize = 1024;
+    const char* music_path = "assets/music/rise_and_fall.ogg";
+
     std::string debug_msg;
 
     // Initilize SDL
@@ -87,6 +92,25 @@ int main() {
     // Initialize OpenGL
     if (!InitGL(&gl_attributes)) {
         debug_msg = "Unable to initialize OpenGL!";
+        std::cerr << debug_msg << std::endl;
+        return -1;
+    }
+
+    // Intialize SDL_mixer
+    if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, chunksize) == -1) {
+        debug_msg = "Mix_OpenAudio " + static_cast<std::string>(Mix_GetError());
+        std::cerr << debug_msg << std::endl;
+    }
+
+    // Load music file
+    Mix_Music *music = Mix_LoadMUS(music_path);
+
+    // Adjust music volume
+    Mix_VolumeMusic(music_volume);
+
+    // Play music
+    if (Mix_PlayMusic(music, -1) == -1) {
+        debug_msg = "Mix_PlayMusic: " + static_cast<std::string>(Mix_GetError());
         std::cerr << debug_msg << std::endl;
         return -1;
     }
