@@ -8,9 +8,10 @@ A simple OpenGL window with SDL2 written in C++
 ## Dependencies
 * gcc (GNU GCC Compiler)
 	* build-essential (Debian and Ubuntu distros and its derivatives)
+* clang (Clang Compiler)
+* llvm (Low Level Virtual Machine)
 * libsdl2-dev
 * libsdl2-mixer-dev
-* libsld2-image-dev
 * cmake
 
 ## Manual Install (Ubuntu 22.04.2 LTS)
@@ -35,12 +36,5 @@ cd build
 Compile the project
 ```
 cmake --build .
-```
-
-## Setup Editor for VSCode
-Go to `~/.config/Code/User/settings.json`
-Add this line if it does not exist
-```
-"C_Cpp.clang_format_fallbackStyle": "{ BaseOnStyle: Google, IndentWidth: 4, TabWidth: 4 }"
 ```
 
