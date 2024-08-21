@@ -37,10 +37,3 @@ Compile the project
 cmake --build .
 ```
 
-## Setup Editor for VSCode
-Go to `~/.config/Code/User/settings.json`
-Add this line if it does not exist
-```
-"C_Cpp.clang_format_fallbackStyle": "{ BaseOnStyle: Google, IndentWidth: 4, TabWidth: 4 }"
-```
-
