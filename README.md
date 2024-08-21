@@ -8,9 +8,10 @@ A simple OpenGL window with SDL2 written in C++
 ## Dependencies
 * gcc (GNU GCC Compiler)
 	* build-essential (Debian and Ubuntu distros and its derivatives)
+* clang (Clang Compiler)
+* llvm (Low Level Virtual Machine)
 * libsdl2-dev
 * libsdl2-mixer-dev
-* libsdl2-image-dev
 * cmake
 
 ## Manual Install (Ubuntu 22.04.2 LTS)
