@@ -10,7 +10,7 @@ A simple OpenGL window with SDL2 written in C++
 	* build-essential (Debian and Ubuntu distros and its derivatives)
 * libsdl2-dev
 * libsdl2-mixer-dev
-* libsld2-image-dev
+* libsdl2-image-dev
 * cmake
 
 ## Manual Install (Ubuntu 22.04.2 LTS)
